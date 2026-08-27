@@ -3017,12 +3017,12 @@ var qrcode = function() {
 <div class="hdr">
  <div class="logo"><div class="mark"></div>
   <div><div class="t1" id="i-title">Sakshya<span>112</span> · <span id="i-t1">Bengaluru Drone Emergency Response Grid</span></div>
-  <div class="t2" id="i-t2">Proposal for Bengaluru City Police · 5-km cells on police facilities · crime-weighted · planning-grade</div></div></div>
+  <div class="t2" id="i-t2">Proposal for Bengaluru City Police · 5-km cells on police facilities · crime-weighted · planning-grade</div>
+  <div class="t2" id="i-mis" style="color:#8fe3d8;font-weight:700">Mission: deter, document and answer every crime — reported or unreported.</div></div></div>
  <div class="stats">
   <div class="phase"><button id="ph0" onclick="setPhase(0)">Phase 0 · 3</button><button id="ph1" class="on" onclick="setPhase(1)">Full city · 13</button></div>
   <div class="st"><div class="sv" id="s-docks">13</div><div class="sk" id="k-docks">DOCKS</div></div>
   <div class="st"><div class="sv" id="s-drones">33</div><div class="sk" id="k-drones">DRONES</div></div>
-  <div class="st"><div class="sv" id="s-est">375</div><div class="sk" id="k-est">EST. EVENTS/DAY</div></div>
   <div class="st"><div class="sv">~75 s</div><div class="sk" id="k-med">MEDIAN RESPONSE</div></div>
   <div class="st"><button class="btn ghost" id="langbtn" onclick="toggleLang()">ಕನ್ನಡ</button></div>
   <div class="st"><button class="btn" id="prbtn" onclick="window.print()">Print</button></div>
@@ -3086,7 +3086,6 @@ function rebuild(){
  var vis=DOCKS.filter(inPhase);
  document.getElementById('s-docks').textContent=vis.length;
  document.getElementById('s-drones').textContent=vis.reduce(function(s,d){return s+d.drones},0);
- document.getElementById('s-est').textContent=vis.reduce(function(s,d){return s+d.est},0);
  opsReady=vis.reduce(function(s,d){return s+d.drones},0);opsMission=0;opsRender();
 }
 function setPhase(p){PHASE=p;clearSim();
@@ -3157,7 +3156,8 @@ try{var q=qrcode(0,'M');q.addData(QR_TARGET);q.make();
 // ---- Kannada toggle ----
 var KN={"i-t1":"ಬೆಂಗಳೂರು ಡ್ರೋನ್ ತುರ್ತು ಸ್ಪಂದನ ಜಾಲ",
  "i-t2":"ಬೆಂಗಳೂರು ನಗರ ಪೊಲೀಸರಿಗೆ ಪ್ರಸ್ತಾವನೆ · ಪೊಲೀಸ್ ಠಾಣೆಗಳಲ್ಲಿ 5 ಕಿ.ಮೀ ಕೋಶಗಳು · ಯೋಜನಾ ಹಂತ",
- "k-docks":"ಡಾಕ್‌ಗಳು","k-drones":"ಡ್ರೋನ್‌ಗಳು","k-est":"ದಿನದ ಘಟನೆಗಳು (ಅಂದಾಜು)","k-med":"ಸರಾಸರಿ ಸ್ಪಂದನ",
+ "i-mis":"ಗುರಿ: ಪ್ರತಿ ಅಪರಾಧಕ್ಕೂ — ವರದಿಯಾದರೂ ಆಗದಿದ್ದರೂ — ತಡೆ, ದಾಖಲೆ, ಸ್ಪಂದನೆ.",
+ "k-docks":"ಡಾಕ್‌ಗಳು","k-drones":"ಡ್ರೋನ್‌ಗಳು","k-med":"ಸರಾಸರಿ ಸ್ಪಂದನ",
  "l1":"ಡ್ರೋನ್ ಡಾಕ್ (ಸಂಖ್ಯೆ = ಡ್ರೋನ್‌ಗಳು)","l2":"ಆಧಾರ ಪೊಲೀಸ್ ಠಾಣೆ (ಡಾಕ್ ಸ್ಥಳ)","l3":"ಇತರ ಪೊಲೀಸ್ ಠಾಣೆಗಳು (131)",
  "l4":"ಹೆಚ್ಚು ಅಪರಾಧದ ಕೋಶ","l5":"ಏರಿದ ಅಪರಾಧದ ಕೋಶ","l6":"ಸಾಮಾನ್ಯ ಕೋಶ",
  "o-title":"ನೇರ ಕಾರ್ಯಾಚರಣೆ","o-rlab":"ಸಿದ್ಧ","o-mlab":"ಕಾರ್ಯದಲ್ಲಿ","prbtn":"ಮುದ್ರಿಸಿ",
