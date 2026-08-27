@@ -3020,7 +3020,7 @@ var qrcode = function() {
   <div class="t2" id="i-t2">Proposal for Bengaluru City Police · 5-km cells on police facilities · crime-weighted · planning-grade</div>
   <div class="t2" id="i-mis" style="color:#8fe3d8;font-weight:700">Mission: deter, document and answer every crime — reported or unreported.</div></div></div>
  <div class="stats">
-  <div class="phase"><button id="ph0" onclick="setPhase(0)">Phase 0 · 3</button><button id="ph1" class="on" onclick="setPhase(1)">BBMP · 13</button><button id="ph2" onclick="setPhase(2)">Greater BLR · 17</button></div>
+  <div class="phase"><button id="ph0" onclick="setPhase(0)">Phase 0 · 3</button><button id="ph1" onclick="setPhase(1)">BBMP · 13</button><button id="ph2" class="on" onclick="setPhase(2)">Greater BLR · 17</button></div>
   <div class="st"><div class="sv" id="s-docks">13</div><div class="sk" id="k-docks">DOCKS</div></div>
   <div class="st"><div class="sv" id="s-drones">41</div><div class="sk" id="k-drones">DRONES</div></div>
   <div class="st"><div class="sv">~75 s</div><div class="sk" id="k-med">MEDIAN RESPONSE</div></div>
@@ -3066,7 +3066,7 @@ var sat=L.layerGroup([
  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,opacity:.85})]);
 function cellColor(i){return i>=1.25?'#e5484d':(i>=1.05?'#d9822b':'#22bfd4');}
 function cellBadge(i){return i>=1.25?'<span class="badge b-hot">HIGH-CRIME CELL</span>':(i>=1.05?'<span class="badge b-med">ELEVATED</span>':'<span class="badge b-low">BASELINE</span>');}
-var PHASE=1;
+var PHASE=2;
 function inPhase(d){return d.tier<=PHASE;}
 var circles=L.layerGroup().addTo(map),anchorLayer=L.layerGroup().addTo(map),dockLayer=L.layerGroup().addTo(map);
 var poiColors={0:'#d9822b',1:'#a78bfa',2:'#2fbf71',3:'#e5484d',4:'#5b8dbb',5:'#f5d90a',6:'#eefcff'};
@@ -3203,5 +3203,5 @@ function toggleLang(){lang=lang==='en'?'kn':'en';
  document.getElementById('ph0').textContent=lang==='kn'?'ಹಂತ 0 · 3':'Phase 0 · 3';
  document.getElementById('ph1').textContent=lang==='kn'?'BBMP · 13':'BBMP · 13';
  document.getElementById('ph2').textContent=lang==='kn'?'ಗ್ರೇಟರ್ ಬೆಂಗಳೂರು · 17':'Greater BLR · 17';}
-rebuild();syncPoi();
+setPhase(2);syncPoi();
 </script></body></html>
