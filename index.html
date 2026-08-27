@@ -3040,7 +3040,7 @@ var qrcode = function() {
 </div>
 <div class="ops"><span class="simtag">SIMULATED DEMO</span>
  <div id="o-title" style="font-weight:800;color:#fff">Live Operations</div>
- <div><span class="big" id="o-ready">33</span> <span id="o-rlab">ready</span> · <span class="big" style="color:#d9822b" id="o-mission">0</span> <span id="o-mlab">on mission</span></div>
+ <div><span class="big" id="o-ready">33</span> <span id="o-rlab">ready</span> · <span class="big" style="color:#d9822b" id="o-mission">0</span> <span id="o-mlab">on mission</span> / <span id="o-tot">33</span></div>
  <div class="feed" id="o-feed">System nominal · all docks reporting</div>
 </div>
 <div class="qr"><div id="qrbox"></div><div id="qrlab">Scan for interactive map (link activates on hosting)</div></div>
@@ -3086,56 +3086,67 @@ function rebuild(){
  var vis=DOCKS.filter(inPhase);
  document.getElementById('s-docks').textContent=vis.length;
  document.getElementById('s-drones').textContent=vis.reduce(function(s,d){return s+d.drones},0);
- opsReady=vis.reduce(function(s,d){return s+d.drones},0);opsMission=0;opsRender();
+ opsReady=vis.reduce(function(s,d){return s+d.drones},0);opsMission=0;var _t=document.getElementById('o-tot');if(_t)_t.textContent=opsReady;opsRender();
 }
-function setPhase(p){PHASE=p;clearSim();
+function setPhase(p){PHASE=p;clearAllSims();
  document.getElementById('ph0').className=p===0?'on':'';
  document.getElementById('ph1').className=p===1?'on':'';
  rebuild();}
 L.control.layers({'Dark':darkBase,'Satellite':sat},
  {'Docks':dockLayer,'Anchor stations (red)':anchorLayer,'5-km coverage':circles,'Police stations':psLayer},
  {position:'bottomleft'}).addTo(map);
-// ---- animated response simulator ----
-var simLine=null,simDrone=null,simAnim=null,simRing=null,simPop=null,simActive=false,simArrived=false;
+// ---- animated response simulator (multi-sim: tap until the fleet is committed) ----
+var sims=[],simSeq=0;
 function havJ(a,b,c,d){var R=6371,p=Math.PI/180;
  var x=Math.sin((c-a)*p/2);x*=x;var y=Math.sin((d-b)*p/2);y*=y;
  return 2*R*Math.asin(Math.sqrt(x+Math.cos(a*p)*Math.cos(c*p)*y));}
-function clearSim(){if(simLine)map.removeLayer(simLine);if(simDrone)map.removeLayer(simDrone);
- if(simRing)map.removeLayer(simRing);if(simAnim)cancelAnimationFrame(simAnim);
- if(simPop)map.closePopup(simPop);
- if(simActive&&!simArrived){opsMission=Math.max(0,opsMission-1);opsRender();}
- simActive=false;simLine=simDrone=simRing=simPop=null;}
+function fleetTotal(){return DOCKS.filter(inPhase).reduce(function(s,d){return s+d.drones},0);}
+function removeSim(S){if(S.line)map.removeLayer(S.line);if(S.drone)map.removeLayer(S.drone);
+ if(S.ring)map.removeLayer(S.ring);if(S.pop)map.closePopup(S.pop);if(S.anim)cancelAnimationFrame(S.anim);}
+function clearAllSims(){sims.forEach(removeSim);sims=[];}
 map.on('click',function(e){
- clearSim();
+ if(opsReady<=0){
+  L.popup().setLatLng(e.latlng).setContent(
+   '<div class="pz">All '+fleetTotal()+' drones committed</div>'+
+   '<div class="pm">Demo cap reached — in live operations, neighbour-cell backfill and returning drones take the next calls. Drones free up as missions complete.</div>').openOn(map);
+  return;}
  var best=null,bd=1e9;
  DOCKS.filter(inPhase).forEach(function(d){var k=havJ(e.latlng.lat,e.latlng.lng,d.lat,d.lon);if(k<bd){bd=k;best=d;}});
  var realSecs=Math.round(10+bd/55.6*1000);
- simLine=L.polyline([[best.lat,best.lon],[e.latlng.lat,e.latlng.lng]],
+ var S={id:++simSeq,arrived:false};
+ S.line=L.polyline([[best.lat,best.lon],[e.latlng.lat,e.latlng.lng]],
   {color:'#22bfd4',weight:2.5,dashArray:'7 7',opacity:.95}).addTo(map);
- simDrone=L.marker([best.lat,best.lon],{icon:L.divIcon({className:'drone-ic',html:'🛸',iconSize:[24,24]}),zIndexOffset:2000}).addTo(map);
- simActive=true;simArrived=false;
- simPop=L.popup({closeOnClick:false,autoClose:false}).setLatLng(e.latlng).setContent(
-  '<div class="pz">Response simulation (8× speed)</div>'+
-  '<div class="pa">Dock: <b>'+best.zone+'</b> · '+bd.toFixed(1)+' km</div>'+
-  '<div class="pa" id="simt">Launching… T+0 s</div>'+
-  '<div class="pm">10-s launch + 200 km/h dash » ETA ~'+realSecs+' s real time</div>');simPop.openOn(map);
+ S.drone=L.marker([best.lat,best.lon],{icon:L.divIcon({className:'drone-ic',html:'🛸',iconSize:[24,24]}),zIndexOffset:2000}).addTo(map);
+ S.pop=L.popup({closeOnClick:false,autoClose:false}).setLatLng(e.latlng).setContent(
+  '<div class="pz">Mission #'+S.id+' · Dock '+best.id+'</div>'+
+  '<div class="pa">'+best.zone+' · '+bd.toFixed(1)+' km</div>'+
+  '<div class="pa" id="simt-'+S.id+'">Launching… T+0 s</div>'+
+  '<div class="pm">10-s launch + 200 km/h dash » ETA ~'+realSecs+' s real time</div>');
+ S.pop.openOn(map);
+ sims.push(S);
+ opsReady--;opsMission++;opsRender();
  var t0=null,SPEED=8,la1=best.lat,lo1=best.lon,la2=e.latlng.lat,lo2=e.latlng.lng;
  function step(ts){
   if(!t0)t0=ts;
   var simSecs=(ts-t0)/1000*SPEED;
   var f=Math.max(0,Math.min(1,(simSecs-10)/(realSecs-10)));
-  simDrone.setLatLng([la1+(la2-la1)*f,lo1+(lo2-lo1)*f]);
-  var el=document.getElementById('simt');
+  S.drone.setLatLng([la1+(la2-la1)*f,lo1+(lo2-lo1)*f]);
+  var el=document.getElementById('simt-'+S.id);
   if(el)el.innerHTML=simSecs<10?('Launching… T+'+Math.floor(simSecs)+' s')
    :(f<1?('En route — T+<b>'+Math.floor(simSecs)+' s</b> of ~'+realSecs+' s'):'')
   if(f>=1){
+   S.arrived=true;
    if(el)el.innerHTML='<b style="color:#2fbf71">DRONE OVERHEAD — T+'+realSecs+' s</b> · streaming evidence (demo)';
-   simRing=L.circleMarker([la2,lo2],{radius:22,color:'#2fbf71',weight:3,fillOpacity:.12}).addTo(map);
-   simArrived=true;opsMission=Math.max(0,opsMission-1);opsRender();return;}
-  simAnim=requestAnimationFrame(step);}
- opsMission++;opsReady=Math.max(0,opsReady-1);opsRender();
- setTimeout(function(){opsReady++;opsRender();},(realSecs/8+30)*1000);
- simAnim=requestAnimationFrame(step);
+   S.ring=L.circleMarker([la2,lo2],{radius:22,color:'#2fbf71',weight:3,fillOpacity:.12}).addTo(map);
+   setTimeout(function(){if(S.pop)map.closePopup(S.pop);S.pop=null;},4000);
+   return;}
+  S.anim=requestAnimationFrame(step);}
+ S.anim=requestAnimationFrame(step);
+ setTimeout(function(){
+  var i=sims.indexOf(S);if(i<0)return;
+  sims.splice(i,1);removeSim(S);
+  opsMission=Math.max(0,opsMission-1);opsReady=Math.min(fleetTotal(),opsReady+1);opsRender();
+ },(realSecs/8+25)*1000);
 });
 // ---- SIMULATED live-ops panel ----
 var opsReady=33,opsMission=0;
